@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Day</title>
+<meta name="theme-color" content="#4f6df5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Day">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="hero">
+      <div class="greeting" id="greet"></div>
+      <h1 id="today-date"></h1>
+      <div class="weather" id="weather">Loading weather…</div>
+    </div>
+    <div class="top-right">
+      <form id="capture-form" class="capture">
+        <input id="capture-input" placeholder="Quick capture to Inbox, press Enter" autocomplete="off">
+      </form>
+      <div class="clock" id="clock"></div>
+      <button class="ghost" id="settings-btn" title="Settings">Settings</button>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Schedule -->
+    <section class="card cal">
+      <div class="card-head">
+        <h2>Schedule</h2>
+        <div class="cal-nav">
+          <div class="seg">
+            <button data-mode="day" class="on">Day</button>
+            <button data-mode="month">Month</button>
+          </div>
+          <button class="ghost" id="prev">&lsaquo;</button>
+          <button class="ghost" id="cal-today">Today</button>
+          <button class="ghost" id="next">&rsaquo;</button>
+        </div>
+      </div>
+      <div class="cal-label" id="cal-label"></div>
+      <div id="cal-body"></div>
+      <form class="ev-form" id="ev-form">
+        <input id="ev-title" placeholder="Add an event…" autocomplete="off" required>
+        <select id="ev-start" aria-label="Start time"></select>
+        <select id="ev-end" aria-label="End time"></select>
+        <button type="submit">Add</button>
+      </form>
+    </section>
+
+    <!-- Focus priorities -->
+    <section class="card">
+      <div class="card-head"><h2>Today's top 3</h2><span class="muted" id="focus-count"></span></div>
+      <div id="focus-list"></div>
+    </section>
+
+    <!-- Pomodoro -->
+    <section class="card pomo">
+      <div class="card-head"><h2>Focus timer</h2></div>
+      <div class="seg">
+        <button data-pomo="focus" class="on">Focus 25</button>
+        <button data-pomo="break">Break 5</button>
+      </div>
+      <div class="pomo-time" id="pomo-time">25:00</div>
+      <div class="muted" id="pomo-today"></div>
+      <div class="pomo-controls">
+        <button id="pomo-start">Start</button>
+        <button class="ghost" id="pomo-reset">Reset</button>
+      </div>
+    </section>
+
+    <!-- To-do -->
+    <section class="card">
+      <div class="card-head"><h2>To-do</h2><span class="muted" id="todo-count"></span></div>
+      <form class="add-row" id="todo-form">
+        <input id="todo-input" placeholder="What needs doing?" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+      <div id="todo-list"></div>
+      <div class="foot">
+        <span class="muted">Tick a box to complete</span>
+        <button class="ghost" id="todo-clear">Clear done</button>
+      </div>
+    </section>
+
+    <!-- Habits -->
+    <section class="card">
+      <div class="card-head"><h2>Habits</h2></div>
+      <form class="add-row" id="habit-form">
+        <input id="habit-input" placeholder="New habit, e.g. Read 20 min" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+      <div id="habit-list"></div>
+    </section>
+
+    <!-- Wellness -->
+    <section class="card">
+      <div class="card-head"><h2>Wellness</h2></div>
+      <div class="well-row">
+        <span class="label">Water</span>
+        <div class="glasses" id="water"></div>
+        <span class="muted" id="water-label"></span>
+      </div>
+      <div class="well-row">
+        <span class="label">Sleep</span>
+        <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="hrs last night">
+      </div>
+      <div class="well-row">
+        <span class="label">Mood</span>
+        <div class="emoji-row" id="mood"></div>
+      </div>
+      <div class="well-row">
+        <span class="label">Energy</span>
+        <input type="range" id="energy" min="1" max="5" step="1">
+        <span class="muted" id="energy-val"></span>
+      </div>
+      <svg class="chart" id="chart" viewBox="0 0 300 120"></svg>
+      <div class="legend">
+        <span><i class="dot mood-dot"></i>Mood</span>
+        <span><i class="dot energy-dot"></i>Energy</span>
+        <span class="muted">last 14 days</span>
+      </div>
+    </section>
+
+    <!-- Habit heatmap -->
+    <section class="card wide">
+      <div class="card-head">
+        <h2>Habit heatmap</h2>
+        <div class="cal-nav">
+          <button class="ghost" id="heat-prev">&lsaquo;</button>
+          <span class="muted" id="heat-label"></span>
+          <button class="ghost" id="heat-next">&rsaquo;</button>
+        </div>
+      </div>
+      <div class="heat-scroll"><div id="heat-body"></div></div>
+    </section>
+
+    <!-- Notes -->
+    <section class="card wide">
+      <div class="card-head">
+        <h2>Notes</h2>
+        <button id="note-new">+ New note</button>
+      </div>
+      <div class="notes-layout">
+        <div class="notes-side">
+          <input id="n-search" placeholder="Search notes…" autocomplete="off">
+          <div class="chips" id="tag-chips"></div>
+          <div class="note-list" id="note-list"></div>
+        </div>
+        <div class="editor">
+          <div class="empty" id="editor-empty">Select a note or create a new one.</div>
+          <div id="editor-body" hidden class="editor">
+            <div class="editor-top">
+              <input id="n-title" class="note-title" placeholder="Title">
+              <button class="ghost danger" id="n-delete">Delete</button>
+            </div>
+            <input id="n-tags" placeholder="Tags, separated by commas (e.g. work, ideas)" autocomplete="off">
+            <textarea id="n-body" placeholder="Write something… #hashtags in the text are tagged automatically too."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="modal" id="settings" hidden>
+  <div class="modal-box">
+    <div class="card-head"><h2>Settings</h2><button class="ghost" id="settings-close">Close</button></div>
+    <label>Theme
+      <select id="s-theme">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">Match system</option>
+      </select>
+    </label>
+    <label>Accent colour
+      <div class="swatches" id="s-accent"></div>
+    </label>
+    <label>City for weather (leave blank to use my location)
+      <input id="s-city" autocomplete="off">
+    </label>
+    <label>Temperature
+      <select id="s-units">
+        <option value="C">Celsius</option>
+        <option value="F">Fahrenheit</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" id="s-reminders"> Reminders for upcoming events and an evening habit nudge</label>
+    <label class="check"><input type="checkbox" id="s-prompt"> Add a daily journal prompt to Notes</label>
+    <div class="backup">
+      <button class="ghost" id="export">Export backup</button>
+      <button class="ghost" id="import-btn">Import backup</button>
+      <input type="file" id="import-file" accept="application/json" hidden>
+    </div>
+    <p class="muted">Your data is stored in this browser only. Export a backup to keep it safe or move it to another computer.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
