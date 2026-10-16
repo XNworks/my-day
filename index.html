@@ -4,165 +4,289 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Day</title>
-<meta name="theme-color" content="#4f6df5">
+<meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="My Day">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- Lucide icon sprite (consistent icon set, no emoji-as-icon) -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.11A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6h.08A1.7 1.7 0 0 0 10.11 3V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.11a1.7 1.7 0 0 0-1.49 1.03z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><path d="M10 2h4"/><path d="M12 14v-4"/><circle cx="12" cy="14" r="8"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><rect x="3" y="5" width="6" height="6" rx="1.5"/><path d="m3 16.5 2 2 4-4"/><path d="M13 7h8"/><path d="M13 12.5h8"/><path d="M13 18h8"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+  <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 21a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 10.1 5 12 5 14a7 7 0 0 0 7 7z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h8l-1 8 10-12h-8z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></symbol>
+  <!-- weather -->
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></symbol>
+  <symbol id="i-cloud-sun" viewBox="0 0 24 24"><path d="M12 2v2M4.9 4.9l1.4 1.4M20 12h2M19.1 4.9l-1.4 1.4"/><path d="M15.9 12.6a4 4 0 0 0-5.9-4.1"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/></symbol>
+  <symbol id="i-cloud-fog" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M16 17H7"/><path d="M17 21H9"/></symbol>
+  <symbol id="i-cloud-drizzle" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 19v1M8 14v1M16 19v1M16 14v1M12 21v1M12 16v1"/></symbol>
+  <symbol id="i-cloud-rain" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M16 14v6M8 14v6M12 16v6"/></symbol>
+  <symbol id="i-cloud-snow" viewBox="0 0 24 24"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 15h.01M8 19h.01M12 17h.01M12 21h.01M16 15h.01M16 19h.01"/></symbol>
+  <symbol id="i-cloud-bolt" viewBox="0 0 24 24"><path d="M6 16.3A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="m13 12-3 5h4l-3 5"/></symbol>
+  <!-- mood faces -->
+  <symbol id="i-mood-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 9.5 9.8 8.4M15.5 9.5 14.2 8.4"/><path d="M8 17.4c.9-1.6 2.3-2.4 4-2.4s3.1.8 4 2.4"/></symbol>
+  <symbol id="i-mood-2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.6 9.2 9.7 8.6M15.4 9.2 14.3 8.6"/><path d="M8.3 17c1-1.1 2.2-1.7 3.7-1.7s2.7.6 3.7 1.7"/></symbol>
+  <symbol id="i-mood-3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 9.6h.01M15.6 9.6h.01"/><path d="M8.6 16.2h6.8"/></symbol>
+  <symbol id="i-mood-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 9.6h.01M15.6 9.6h.01"/><path d="M8.3 14.6c1 1.5 2.2 2.2 3.7 2.2s2.7-.7 3.7-2.2"/></symbol>
+  <symbol id="i-mood-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.2 9.8h.01M15.8 9.8h.01"/><path d="M7.6 13.4c1.1 2.2 2.6 3.3 4.4 3.3s3.3-1.1 4.4-3.3"/></symbol>
+  <!-- photos -->
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+  <symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4A2 2 0 0 0 7 17.8V22"/><path d="M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4A2 2 0 0 0 17 6.2V2"/></symbol>
+</svg>
+
 <div class="wrap">
 
   <header class="topbar">
     <div class="hero">
       <div class="greeting" id="greet"></div>
       <h1 id="today-date"></h1>
-      <div class="weather" id="weather">Loading weather…</div>
+      <div class="weather" id="weather">
+        <svg class="ico" aria-hidden="true"><use href="#i-cloud-sun"/></svg>
+        <span>Loading weather…</span>
+      </div>
     </div>
     <div class="top-right">
-      <form id="capture-form" class="capture">
-        <input id="capture-input" placeholder="Quick capture to Inbox, press Enter" autocomplete="off">
+      <form id="capture-form" class="capture" role="search">
+        <svg class="ico" aria-hidden="true"><use href="#i-inbox"/></svg>
+        <input id="capture-input" placeholder="Quick capture to Inbox…" autocomplete="off" aria-label="Quick capture to Inbox">
       </form>
-      <div class="clock" id="clock"></div>
-      <button class="ghost" id="settings-btn" title="Settings">Settings</button>
+      <div class="clock" id="clock" aria-live="off"></div>
+      <button class="btn icon-only" id="settings-btn" title="Settings" aria-label="Open settings">
+        <svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>
+      </button>
     </div>
   </header>
 
   <div class="grid">
 
     <!-- Schedule -->
-    <section class="card cal">
+    <section class="card cal" aria-labelledby="h-schedule">
       <div class="card-head">
-        <h2>Schedule</h2>
+        <h2 id="h-schedule"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg>Schedule</h2>
         <div class="cal-nav">
-          <div class="seg">
-            <button data-mode="day" class="on">Day</button>
-            <button data-mode="month">Month</button>
+          <div class="seg" role="group" aria-label="Calendar view">
+            <button data-mode="day" class="on" aria-pressed="true">Day</button>
+            <button data-mode="month" aria-pressed="false">Month</button>
           </div>
-          <button class="ghost" id="prev">&lsaquo;</button>
-          <button class="ghost" id="cal-today">Today</button>
-          <button class="ghost" id="next">&rsaquo;</button>
+          <button class="btn ghost icon-only" id="prev" aria-label="Previous"><svg class="ico" aria-hidden="true"><use href="#i-chev-left"/></svg></button>
+          <button class="btn ghost" id="cal-today">Today</button>
+          <button class="btn ghost icon-only" id="next" aria-label="Next"><svg class="ico" aria-hidden="true"><use href="#i-chev-right"/></svg></button>
         </div>
       </div>
       <div class="cal-label" id="cal-label"></div>
       <div id="cal-body"></div>
       <form class="ev-form" id="ev-form">
-        <input id="ev-title" placeholder="Add an event…" autocomplete="off" required>
+        <input id="ev-title" placeholder="Add an event…" autocomplete="off" required aria-label="Event title">
         <select id="ev-start" aria-label="Start time"></select>
         <select id="ev-end" aria-label="End time"></select>
-        <button type="submit">Add</button>
+        <button class="btn" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
       </form>
     </section>
 
     <!-- Focus priorities -->
-    <section class="card">
-      <div class="card-head"><h2>Today's top 3</h2><span class="muted" id="focus-count"></span></div>
+    <section class="card top3" aria-labelledby="h-top3">
+      <div class="card-head">
+        <h2 id="h-top3"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg>Today's top 3</h2>
+        <span class="muted" id="focus-count"></span>
+      </div>
       <div id="focus-list"></div>
     </section>
 
     <!-- Pomodoro -->
-    <section class="card pomo">
-      <div class="card-head"><h2>Focus timer</h2></div>
-      <div class="seg">
-        <button data-pomo="focus" class="on">Focus 25</button>
-        <button data-pomo="break">Break 5</button>
+    <section class="card pomo" aria-labelledby="h-timer">
+      <div class="card-head"><h2 id="h-timer"><svg class="ico" aria-hidden="true"><use href="#i-timer"/></svg>Focus timer</h2></div>
+      <div class="seg" role="group" aria-label="Timer mode">
+        <button data-pomo="focus" class="on" aria-pressed="true">Focus 25</button>
+        <button data-pomo="break" aria-pressed="false">Break 5</button>
       </div>
-      <div class="pomo-time" id="pomo-time">25:00</div>
+      <div class="pomo-time" id="pomo-time" role="timer" aria-live="off">25:00</div>
       <div class="muted" id="pomo-today"></div>
       <div class="pomo-controls">
-        <button id="pomo-start">Start</button>
-        <button class="ghost" id="pomo-reset">Reset</button>
+        <button class="btn" id="pomo-start"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span>Start</span></button>
+        <button class="btn ghost" id="pomo-reset"><svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>Reset</button>
       </div>
     </section>
 
     <!-- To-do -->
-    <section class="card">
-      <div class="card-head"><h2>To-do</h2><span class="muted" id="todo-count"></span></div>
+    <section class="card todo-card" aria-labelledby="h-todo">
+      <div class="card-head">
+        <h2 id="h-todo"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg>To-do</h2>
+        <span class="muted" id="todo-count"></span>
+      </div>
       <form class="add-row" id="todo-form">
-        <input id="todo-input" placeholder="What needs doing?" autocomplete="off">
-        <button type="submit">Add</button>
+        <input id="todo-input" placeholder="What needs doing?" autocomplete="off" aria-label="New to-do">
+        <button class="btn" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
       </form>
       <div id="todo-list"></div>
       <div class="foot">
         <span class="muted">Tick a box to complete</span>
-        <button class="ghost" id="todo-clear">Clear done</button>
+        <button class="btn ghost sm" id="todo-clear">Clear done</button>
       </div>
     </section>
 
     <!-- Habits -->
-    <section class="card">
-      <div class="card-head"><h2>Habits</h2></div>
+    <section class="card habits-card" aria-labelledby="h-habits">
+      <div class="card-head"><h2 id="h-habits"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg>Habits</h2></div>
       <form class="add-row" id="habit-form">
-        <input id="habit-input" placeholder="New habit, e.g. Read 20 min" autocomplete="off">
-        <button type="submit">Add</button>
+        <input id="habit-input" placeholder="New habit, e.g. Read 20 min" autocomplete="off" aria-label="New habit">
+        <button class="btn" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
       </form>
       <div id="habit-list"></div>
     </section>
 
+    <!-- Daily photos -->
+    <section class="card photos" aria-labelledby="h-photos">
+      <div class="card-head">
+        <h2 id="h-photos"><svg class="ico" aria-hidden="true"><use href="#i-camera"/></svg>Daily photos</h2>
+        <span class="muted" id="photo-count"></span>
+      </div>
+      <div class="photo-row" id="photo-row"></div>
+      <input type="file" id="photo-input" accept="image/*" multiple hidden>
+      <div class="foot">
+        <span class="muted">Three photos a day — tap a slot to add or drop files</span>
+        <span class="muted" id="photo-meta"></span>
+      </div>
+    </section>
+
     <!-- Wellness -->
-    <section class="card">
-      <div class="card-head"><h2>Wellness</h2></div>
-      <div class="well-row">
-        <span class="label">Water</span>
-        <div class="glasses" id="water"></div>
-        <span class="muted" id="water-label"></span>
+    <section class="card wellness" aria-labelledby="h-wellness">
+      <div class="card-head"><h2 id="h-wellness"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"/></svg>Wellness</h2></div>
+
+      <div class="well-block">
+        <div class="well-head">
+          <span class="well-title"><svg class="ico" aria-hidden="true"><use href="#i-droplet"/></svg>Water</span>
+          <span class="muted" id="water-label"></span>
+        </div>
+        <div class="bottles" id="water" role="group" aria-label="Water bottles"></div>
       </div>
-      <div class="well-row">
-        <span class="label">Sleep</span>
-        <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="hrs last night">
+
+      <div class="well-block">
+        <div class="well-head">
+          <label class="well-title" for="sleep"><svg class="ico" aria-hidden="true"><use href="#i-moon"/></svg>Sleep</label>
+        </div>
+        <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="Hours last night">
       </div>
-      <div class="well-row">
-        <span class="label">Mood</span>
-        <div class="emoji-row" id="mood"></div>
+
+      <div class="well-block">
+        <div class="well-head">
+          <span class="well-title"><svg class="ico" aria-hidden="true"><use href="#i-mood-4"/></svg>Mood</span>
+        </div>
+        <div class="mood-row" id="mood" role="group" aria-label="Today's mood"></div>
       </div>
-      <div class="well-row">
-        <span class="label">Energy</span>
+
+      <div class="well-block">
+        <div class="well-head">
+          <label class="well-title" for="energy"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg>Energy</label>
+          <span class="muted" id="energy-val"></span>
+        </div>
         <input type="range" id="energy" min="1" max="5" step="1">
-        <span class="muted" id="energy-val"></span>
       </div>
-      <svg class="chart" id="chart" viewBox="0 0 300 120"></svg>
-      <div class="legend">
-        <span><i class="dot mood-dot"></i>Mood</span>
-        <span><i class="dot energy-dot"></i>Energy</span>
-        <span class="muted">last 14 days</span>
+
+      <div class="chart-wrap">
+        <svg class="chart" id="chart" viewBox="0 0 300 120" role="img" aria-label="Mood and energy over the last 14 days"></svg>
+        <div class="legend">
+          <span><i class="dot mood-dot"></i>Mood</span>
+          <span><i class="dot energy-dot"></i>Energy</span>
+          <span class="muted">last 14 days</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Countdown -->
+    <section class="card countdown" aria-labelledby="h-countdown">
+      <div class="card-head">
+        <h2 id="h-countdown"><svg class="ico" aria-hidden="true"><use href="#i-hourglass"/></svg>Countdown</h2>
+        <span class="muted" id="cd-count"></span>
+      </div>
+      <div id="cd-list"></div>
+      <form class="cd-form" id="cd-form">
+        <input id="cd-name" placeholder="Add a countdown, e.g. Trip to Lisbon" autocomplete="off" aria-label="Countdown name">
+        <div class="cd-form-row">
+          <input type="date" id="cd-date" aria-label="Target date" required>
+          <button class="btn" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
+        </div>
+      </form>
+      <div class="foot" id="cd-foot" hidden>
+        <span class="muted">Dates save with your other data</span>
+        <button class="btn ghost sm" id="cd-clear">Clear passed</button>
       </div>
     </section>
 
     <!-- Habit heatmap -->
-    <section class="card wide">
+    <section class="card wide heat" aria-labelledby="h-heat">
       <div class="card-head">
-        <h2>Habit heatmap</h2>
+        <h2 id="h-heat"><svg class="ico" aria-hidden="true"><use href="#i-flame"/></svg>Habit heatmap</h2>
         <div class="cal-nav">
-          <button class="ghost" id="heat-prev">&lsaquo;</button>
+          <button class="btn ghost icon-only" id="heat-prev" aria-label="Previous month"><svg class="ico" aria-hidden="true"><use href="#i-chev-left"/></svg></button>
           <span class="muted" id="heat-label"></span>
-          <button class="ghost" id="heat-next">&rsaquo;</button>
+          <button class="btn ghost icon-only" id="heat-next" aria-label="Next month"><svg class="ico" aria-hidden="true"><use href="#i-chev-right"/></svg></button>
         </div>
       </div>
       <div class="heat-scroll"><div id="heat-body"></div></div>
     </section>
 
     <!-- Notes -->
-    <section class="card wide">
+    <section class="card wide notes-card" aria-labelledby="h-notes">
       <div class="card-head">
-        <h2>Notes</h2>
-        <button id="note-new">+ New note</button>
+        <h2 id="h-notes"><svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>Notes</h2>
+        <button class="btn" id="note-new"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>New note</button>
       </div>
       <div class="notes-layout">
         <div class="notes-side">
-          <input id="n-search" placeholder="Search notes…" autocomplete="off">
-          <div class="chips" id="tag-chips"></div>
+          <div class="search-box">
+            <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+            <input id="n-search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+          </div>
+          <div class="chips" id="tag-chips" role="group" aria-label="Filter by tag"></div>
           <div class="note-list" id="note-list"></div>
         </div>
         <div class="editor">
-          <div class="empty" id="editor-empty">Select a note or create a new one.</div>
+          <div class="empty" id="editor-empty">
+            <svg class="ico big" aria-hidden="true"><use href="#i-note"/></svg>
+            <p>Select a note or create a new one.</p>
+          </div>
           <div id="editor-body" hidden class="editor">
             <div class="editor-top">
-              <input id="n-title" class="note-title" placeholder="Title">
-              <button class="ghost danger" id="n-delete">Delete</button>
+              <input id="n-title" class="note-title" placeholder="Title" aria-label="Note title">
+              <button class="btn ghost danger sm" id="n-delete"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>Delete</button>
             </div>
-            <input id="n-tags" placeholder="Tags, separated by commas (e.g. work, ideas)" autocomplete="off">
-            <textarea id="n-body" placeholder="Write something… #hashtags in the text are tagged automatically too."></textarea>
+            <div class="tag-input">
+              <svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg>
+              <input id="n-tags" placeholder="Tags, separated by commas (e.g. work, ideas)" autocomplete="off" aria-label="Note tags">
+            </div>
+            <textarea id="n-body" placeholder="Write something… #hashtags in the text are tagged automatically too." aria-label="Note body"></textarea>
           </div>
         </div>
       </div>
@@ -173,39 +297,59 @@
 
 <!-- Settings -->
 <div class="modal" id="settings" hidden>
-  <div class="modal-box">
-    <div class="card-head"><h2>Settings</h2><button class="ghost" id="settings-close">Close</button></div>
-    <label>Theme
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="h-settings">
+    <div class="card-head">
+      <h2 id="h-settings">Settings</h2>
+      <button class="btn ghost icon-only" id="settings-close" aria-label="Close settings"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <label for="s-theme">Theme
       <select id="s-theme">
         <option value="light">Light</option>
         <option value="dark">Dark</option>
         <option value="system">Match system</option>
       </select>
     </label>
-    <label>Accent colour
-      <div class="swatches" id="s-accent"></div>
-    </label>
-    <label>City for weather (leave blank to use my location)
+    <fieldset class="fieldset">
+      <legend>Accent colour</legend>
+      <div class="swatches" id="s-accent" role="group" aria-label="Accent colour"></div>
+    </fieldset>
+    <label for="s-city">City for weather (leave blank to use my location)
       <input id="s-city" autocomplete="off">
     </label>
-    <label>Temperature
+    <label for="s-units">Temperature
       <select id="s-units">
         <option value="C">Celsius</option>
         <option value="F">Fahrenheit</option>
       </select>
     </label>
-    <label class="check"><input type="checkbox" id="s-reminders"> Reminders for upcoming events and an evening habit nudge</label>
-    <label class="check"><input type="checkbox" id="s-prompt"> Add a daily journal prompt to Notes</label>
+    <label class="check"><input type="checkbox" id="s-reminders"> <span>Reminders for upcoming events and an evening habit nudge</span></label>
+    <label class="check"><input type="checkbox" id="s-prompt"> <span>Add a daily journal prompt to Notes</span></label>
+    <fieldset class="fieldset">
+      <legend>Daily photos</legend>
+      <p class="muted" id="s-photo-info"></p>
+      <button class="btn ghost danger" id="s-photos-clear"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>Delete all photos</button>
+    </fieldset>
     <div class="backup">
-      <button class="ghost" id="export">Export backup</button>
-      <button class="ghost" id="import-btn">Import backup</button>
+      <button class="btn ghost" id="export"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg>Export backup</button>
+      <button class="btn ghost" id="import-btn"><svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg>Import backup</button>
       <input type="file" id="import-file" accept="application/json" hidden>
     </div>
     <p class="muted">Your data is stored in this browser only. Export a backup to keep it safe or move it to another computer.</p>
   </div>
 </div>
 
-<div class="toast" id="toast" hidden></div>
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-x" id="lb-close" aria-label="Close photo viewer"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+  <button class="lb-nav prev" id="lb-prev" aria-label="Previous photo"><svg class="ico" aria-hidden="true"><use href="#i-chev-left"/></svg></button>
+  <img id="lb-img" alt="">
+  <button class="lb-nav next" id="lb-next" aria-label="Next photo"><svg class="ico" aria-hidden="true"><use href="#i-chev-right"/></svg></button>
+  <div class="lb-bar">
+    <span id="lb-cap"></span>
+    <button class="btn ghost danger sm" id="lb-del"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg>Delete</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="app.js"></script>
 </body>

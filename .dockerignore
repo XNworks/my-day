@@ -1,6 +1,8 @@
 data
 node_modules
 .git
+.github
+unraid
 *.md
 Dockerfile
 docker-compose.yml

@@ -1,12 +1,20 @@
 services:
   myday:
     build: .
+    # or pull the prebuilt image instead of building:
+    # image: ghcr.io/YOURUSER/my-day:latest
     container_name: myday
     restart: unless-stopped
     ports:
       - "8585:8080"
     environment:
       APP_USER: "you"
+      # Required for the login. Leave blank and the dashboard is open to your LAN.
       APP_PASSWORD: "change-this-password"
+      # How long a signed-in device stays signed in (days).
+      SESSION_DAYS: "365"
+      # Set to "true" only when serving over HTTPS (e.g. behind a reverse proxy),
+      # otherwise the login cookie will be rejected by the browser.
+      COOKIE_SECURE: "false"
     volumes:
-      - /mnt/user/appdata/myday/data:/data
+      - /mnt/user/appdata/myday:/data

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+  Unraid Docker template for "My Day".
+
+  Before using this file, replace YOURUSER and my-day everywhere with your
+  GitHub username and repository name. The easiest way is the one-liner in the
+  README ("Custom" template in the Unraid Add Container screen), but you can
+  also drop this file into:
+      /boot/config/plugins/dockerMan/templates-user/my-my-day.xml
+-->
+<Container version="2">
+  <Name>MyDay</Name>
+  <Repository>ghcr.io/YOURUSER/my-day:latest</Repository>
+  <Registry>https://github.com/YOURUSER/my-day/pkgs/container/my-day</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/YOURUSER/my-day/issues</Support>
+  <Project>https://github.com/YOURUSER/my-day</Project>
+  <Overview>Personal daily dashboard: to-do list, habit tracker with heatmap, calendar, hashtag notes, mood &amp; energy check-in, 789&#160;ml water bottles, a three-a-day photo journal and a countdown card. Data lives in a single JSON file on your array and syncs to every device you sign in from.</Overview>
+  <Category>Productivity: Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/YOURUSER/my-day/main/unraid/my-day.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/YOURUSER/my-day/main/icon.svg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>0</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+
+  <Config Name="WebUI Port" Target="8080" Default="8585" Mode="tcp"
+          Description="Port to open the dashboard on. Point your browser at http://TOWER-IP:8585"
+          Type="Port" Display="always" Required="true" Mask="false">8585</Config>
+
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/my-day" Mode="rw"
+          Description="Folder on the array that holds state.json — your entire dashboard. Back this up."
+          Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/my-day</Config>
+
+  <Config Name="Username" Target="APP_USER" Default="admin" Mode=""
+          Description="The username you sign in with."
+          Type="Variable" Display="always" Required="true" Mask="false">admin</Config>
+
+  <Config Name="Password" Target="APP_PASSWORD" Default="" Mode=""
+          Description="The password you sign in with. Set this — without it the dashboard has no login at all. You only sign in once per device."
+          Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <Config Name="Stay signed in (days)" Target="SESSION_DAYS" Default="365" Mode=""
+          Description="How long a device stays signed in before it asks again."
+          Type="Variable" Display="advanced" Required="false" Mask="false">365</Config>
+
+  <Config Name="Secure cookie" Target="COOKIE_SECURE" Default="false" Mode=""
+          Description="Leave false for plain http:// on your LAN. Set to true only if you reach the dashboard through an HTTPS reverse proxy, otherwise the login cookie will be rejected."
+          Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+</Container>

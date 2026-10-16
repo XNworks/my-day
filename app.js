@@ -1,9 +1,20 @@
 const KEY = 'myday.v2';
 const START = 8 * 60;   // 08:00
 const END = 17 * 60;    // 17:00
-const WATER_GOAL = 8;
-const MOODS = ['😣', '😕', '😐', '🙂', '😄'];
-const ACCENTS = ['#4f6df5', '#2fa876', '#e5484d', '#f59e0b', '#8b5cf6', '#0ea5e9'];
+const BOTTLE_ML = 789;          // ml per bottle
+const BOTTLES = 3;              // bottles is the daily water goal
+const WATER_GOAL = BOTTLE_ML * BOTTLES;
+const MOODS = [
+  { icon: 'i-mood-1', label: 'Awful' },
+  { icon: 'i-mood-2', label: 'Low' },
+  { icon: 'i-mood-3', label: 'Okay' },
+  { icon: 'i-mood-4', label: 'Good' },
+  { icon: 'i-mood-5', label: 'Great' }
+];
+const ACCENTS = ['#2563eb', '#0d9488', '#7c3aed', '#db2777', '#ea580c', '#0891b2'];
+const PHOTO_SLOTS = 3;      // three photos a day
+const PHOTO_MAX = 1000;     // px, longest side after downscaling
+const PHOTO_QUALITY = 0.72; // JPEG quality
 const PROMPTS = [
   'What is one thing that went well today, and why?',
   'What would make tomorrow feel like a good day?',
@@ -15,9 +26,11 @@ const PROMPTS = [
   'If today were your last day off, how would you spend it?'
 ];
 const $ = s => document.querySelector(s);
+// icon set is a Lucide-derived SVG sprite defined in index.html (never emoji)
+const icon = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
 
 const DEFAULTS = {
-  events: [], todos: [], habits: [], notes: [],
+  events: [], todos: [], habits: [], notes: [], photos: {}, countdowns: [],
   priorities: {}, pomo: {}, checkins: {}, water: {}, sleep: {},
   lastPrompt: '', lastNudge: '',
   settings: { theme: 'light', accent: ACCENTS[0], city: '', units: 'C', reminders: false, dailyPrompt: true }
@@ -30,7 +43,11 @@ function load() {
 }
 let state = load();
 function save() {
-  localStorage.setItem(KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    toast('Device storage is full — delete some photos or export a backup');
+  }
   queueRemoteSave();
 }
 
@@ -43,6 +60,9 @@ function queueRemoteSave() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state),
       keepalive: true
+    }).then(res => {
+      if (res.status === 401) toast('Signed out — reload the page to sign in again');
+      else if (!res.ok) toast('Kept on this device, but the server refused the sync');
     }).catch(() => toast('Offline: changes are saved on this device only'));
   }, 400);
 }
@@ -61,12 +81,6 @@ async function loadRemote() {
   } catch {}
 }
 
-let viewDate = todayStr();
-let calMode = 'day';
-let noteId = null;
-let noteFilter = null;
-let heatMonth = todayStr();
-
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const fmtKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 function todayStr() { return fmtKey(new Date()); }
@@ -81,6 +95,13 @@ const label = min => {
 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+/* ---------- Mutable view state ---------- */
+let viewDate = todayStr();
+let calMode = 'day';
+let noteId = null;
+let noteFilter = null;
+let heatMonth = todayStr();
 
 /* ---------- Toast & notifications ---------- */
 let toastTimer;
@@ -114,7 +135,8 @@ function fillSettings() {
   $('#s-reminders').checked = s.reminders;
   $('#s-prompt').checked = s.dailyPrompt;
   $('#s-accent').innerHTML = ACCENTS.map(c =>
-    `<button class="swatch ${c === s.accent ? 'on' : ''}" data-color="${c}" style="background:${c}" title="${c}"></button>`).join('');
+    `<button class="swatch ${c === s.accent ? 'on' : ''}" data-color="${c}" style="background:${c}" title="${c}" aria-label="Accent ${c}"></button>`).join('');
+  renderSettingsInfo();
 }
 
 /* ---------- Clock, date, greeting ---------- */
@@ -135,27 +157,31 @@ function tick() {
   } else if (now.getMinutes() !== lastMin) {
     lastMin = now.getMinutes();
     renderCalendar();
+    renderCountdown();
     checkReminders();
   }
 }
 
 /* ---------- Weather ---------- */
 function wxIcon(c) {
-  if (c === 0) return '☀️';
-  if (c <= 2) return '🌤️';
-  if (c === 3) return '☁️';
-  if (c <= 48) return '🌫️';
-  if (c <= 57) return '🌦️';
-  if (c <= 67) return '🌧️';
-  if (c <= 77) return '🌨️';
-  if (c <= 82) return '🌦️';
-  return '⛈️';
+  if (c === 0) return 'i-sun';
+  if (c <= 2) return 'i-cloud-sun';
+  if (c === 3) return 'i-cloud';
+  if (c <= 48) return 'i-cloud-fog';
+  if (c <= 57) return 'i-cloud-drizzle';
+  if (c <= 67) return 'i-cloud-rain';
+  if (c <= 77) return 'i-cloud-snow';
+  if (c <= 82) return 'i-cloud-rain';
+  return 'i-cloud-bolt';
 }
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 
+function setWeather(iconId, text) {
+  $('#weather').innerHTML = `${icon(iconId)}<span>${esc(text)}</span>`;
+}
+
 async function loadWeather() {
-  const el = $('#weather');
-  el.textContent = 'Loading weather…';
+  setWeather('i-cloud-sun', 'Loading weather…');
   try {
     let lat, lon, place = '';
     const city = state.settings.city.trim();
@@ -171,15 +197,19 @@ async function loadWeather() {
     const w = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);
     let t = w.current.temperature_2m, unit = '°C';
     if (state.settings.units === 'F') { t = t * 9 / 5 + 32; unit = '°F'; }
-    el.textContent = `${wxIcon(w.current.weather_code)} ${Math.round(t)}${unit}${place ? ' · ' + place : ''}`;
+    setWeather(wxIcon(w.current.weather_code), `${Math.round(t)}${unit}${place ? ' · ' + place : ''}`);
   } catch {
-    el.textContent = 'Weather unavailable. Set a city in Settings.';
+    setWeather('i-cloud-fog', 'Weather unavailable. Set a city in Settings.');
   }
 }
 
 /* ---------- Calendar ---------- */
 function renderCalendar() {
-  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === calMode));
+  document.querySelectorAll('[data-mode]').forEach(b => {
+    const on = b.dataset.mode === calMode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   $('#ev-form').hidden = calMode !== 'day';
   if (calMode === 'day') renderDay(); else renderMonth();
 }
@@ -317,9 +347,13 @@ const pomo = { mode: 'focus', left: POMO.focus, id: null };
 
 function renderPomo() {
   $('#pomo-time').textContent = fmtTime(pomo.left);
-  $('#pomo-start').textContent = pomo.id ? 'Pause' : 'Start';
+  $('#pomo-start').innerHTML = icon(pomo.id ? 'i-pause' : 'i-play') + `<span>${pomo.id ? 'Pause' : 'Start'}</span>`;
   $('#pomo-today').textContent = `${state.pomo[todayStr()] || 0} min focused today`;
-  document.querySelectorAll('[data-pomo]').forEach(b => b.classList.toggle('on', b.dataset.pomo === pomo.mode));
+  document.querySelectorAll('[data-pomo]').forEach(b => {
+    const on = b.dataset.pomo === pomo.mode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
 }
 function setPomoMode(mode) {
   clearInterval(pomo.id);
@@ -355,9 +389,9 @@ function renderTodos() {
   $('#todo-list').innerHTML = state.todos.length
     ? state.todos.map(t => `
       <div class="todo ${t.done ? 'done' : ''}">
-        <input type="checkbox" data-act="toggle" data-id="${t.id}" ${t.done ? 'checked' : ''}>
+        <input type="checkbox" data-act="toggle" data-id="${t.id}" ${t.done ? 'checked' : ''} aria-label="Mark ${esc(t.text)} complete">
         <span>${esc(t.text)}</span>
-        <button class="icon" data-act="del-todo" data-id="${t.id}" title="Delete">&times;</button>
+        <button class="icon" data-act="del-todo" data-id="${t.id}" title="Delete" aria-label="Delete ${esc(t.text)}">${icon('i-trash')}</button>
       </div>`).join('')
     : `<p class="muted">Nothing on the list. Enjoy the calm.</p>`;
 }
@@ -377,18 +411,20 @@ function renderHabits() {
   $('#habit-list').innerHTML = state.habits.length
     ? state.habits.map(h => {
         const s = streak(h);
+        const on = h.days.includes(today);
         return `
         <div class="habit">
           <div class="habit-top">
-            <button class="check ${h.days.includes(today) ? 'on' : ''}" data-act="habit" data-id="${h.id}" title="Mark today">&#10003;</button>
+            <button class="habit-check ${on ? 'on' : ''}" data-act="habit" data-id="${h.id}" title="Mark today"
+              aria-pressed="${on}" aria-label="Mark ${esc(h.name)} done today">${icon('i-check')}</button>
             <span class="name">${esc(h.name)}</span>
-            <button class="icon" data-act="del-habit" data-id="${h.id}" title="Delete">&times;</button>
+            <button class="icon" data-act="del-habit" data-id="${h.id}" title="Delete habit" aria-label="Delete ${esc(h.name)}">${icon('i-trash')}</button>
           </div>
           <div class="habit-meta">
             <div class="week">${week.map(d => `
               <div class="day ${h.days.includes(d) ? 'on' : ''}">${parseKey(d).toLocaleDateString([], { weekday: 'narrow' })}<i></i></div>`).join('')}
             </div>
-            <span class="streak">Streak <b>${s}</b> ${s === 1 ? 'day' : 'days'}</span>
+            <span class="streak">${icon('i-flame')}Streak <b>${s}</b> ${s === 1 ? 'day' : 'days'}</span>
           </div>
         </div>`;
       }).join('')
@@ -427,13 +463,19 @@ function renderHeat() {
 function renderWellness() {
   const k = todayStr();
   const c = state.checkins[k] || {};
-  const w = state.water[k] || 0;
-  $('#water').innerHTML = [...Array(WATER_GOAL)].map((_, i) =>
-    `<button class="glass ${i < w ? 'on' : ''}" data-n="${i + 1}" title="${i + 1} glass${i ? 'es' : ''}"></button>`).join('');
-  $('#water-label').textContent = `${w}/${WATER_GOAL}`;
+  const w = Math.min(state.water[k] || 0, BOTTLES);
+  $('#water').innerHTML = [...Array(BOTTLES)].map((_, i) => `
+    <button class="bottle ${i < w ? 'on' : ''}" data-n="${i + 1}"
+      title="Bottle ${i + 1} of ${BOTTLES} (${BOTTLE_ML} ml)" aria-pressed="${i < w}">
+      <span class="cap"></span>
+      <span class="body"><b>${BOTTLE_ML}</b>ml</span>
+    </button>`).join('');
+  $('#water-label').textContent =
+    `${w}/${BOTTLES} · ${(w * BOTTLE_ML / 1000).toFixed(2)} of ${(WATER_GOAL / 1000).toFixed(2)} L`;
   $('#sleep').value = state.sleep[k] ?? '';
   $('#mood').innerHTML = MOODS.map((mo, i) =>
-    `<button class="mood-btn ${c.mood === i + 1 ? 'on' : ''}" data-mood="${i + 1}" title="Mood ${i + 1}/5">${mo}</button>`).join('');
+    `<button class="mood-btn ${c.mood === i + 1 ? 'on' : ''}" data-mood="${i + 1}"
+      title="${mo.label}" aria-label="${mo.label}" aria-pressed="${c.mood === i + 1}">${icon(mo.icon)}</button>`).join('');
   $('#energy').value = c.energy || 3;
   $('#energy-val').textContent = c.energy ? `${c.energy}/5` : 'not set';
 }
@@ -454,6 +496,172 @@ function renderChart() {
     series(d => state.checkins[d]?.energy, 'energy') +
     `<text class="ax" x="${pad}" y="118">${parseKey(days[0]).toLocaleDateString([], { month: 'short', day: 'numeric' })}</text>` +
     `<text class="ax" x="${W - pad}" y="118" text-anchor="end">Today</text>`;
+}
+
+/* ---------- Daily photos ---------- */
+function photosToday() {
+  const k = todayStr();
+  if (!Array.isArray(state.photos[k])) state.photos[k] = [];
+  return state.photos[k];
+}
+function photoCount() {
+  return Object.values(state.photos).reduce((n, list) => n + list.length, 0);
+}
+function photoBytes() {
+  let n = 0;
+  Object.values(state.photos).forEach(list => list.forEach(p => n += p.src.length * 2));
+  return n; // images live in localStorage as UTF-16, so ~2 bytes per encoded char
+}
+const fmtBytes = n => n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`;
+
+function renderPhotos() {
+  const list = photosToday();
+  $('#photo-count').textContent = list.length ? `${list.length} of ${PHOTO_SLOTS} today` : '';
+
+  let html = '';
+  for (let i = 0; i < PHOTO_SLOTS; i++) {
+    const p = list[i];
+    html += p
+      ? `<div class="photo-slot filled">
+          <img src="${p.src}" alt="Photo ${i + 1} added on ${todayStr()}" loading="lazy">
+          <button class="photo-act open" data-open="${p.id}" title="View larger" aria-label="View photo ${i + 1} larger">${icon('i-maximize')}</button>
+          <button class="photo-act del" data-del="${p.id}" title="Remove photo" aria-label="Remove photo ${i + 1}">${icon('i-x')}</button>
+        </div>`
+      : `<button class="photo-slot empty" data-add="1" aria-label="Add photo ${i + 1} of ${PHOTO_SLOTS}">${icon('i-image')}<span>Add photo</span></button>`;
+  }
+  $('#photo-row').innerHTML = html;
+
+  const total = photoCount();
+  $('#photo-meta').textContent = total ? `${total} saved · ${fmtBytes(photoBytes())}` : '';
+}
+
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, PHOTO_MAX / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * scale));
+      c.height = Math.max(1, Math.round(img.height * scale));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      resolve(c.toDataURL('image/jpeg', PHOTO_QUALITY));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+    img.src = url;
+  });
+}
+
+async function addPhotos(files) {
+  const list = photosToday();
+  const room = PHOTO_SLOTS - list.length;
+  if (room <= 0) { toast(`${PHOTO_SLOTS} photos a day — today's are already in`); return; }
+  const picked = [...files].slice(0, room);
+  if (files.length > room) toast(`Adding ${picked.length} — the limit is ${PHOTO_SLOTS} a day`);
+
+  let added = 0;
+  for (const file of picked) {
+    if (!file.type.startsWith('image/')) { toast(`${file.name || 'That file'} is not an image`); continue; }
+    try {
+      list.push({ id: uid(), src: await shrinkImage(file), ts: Date.now() });
+      added++;
+    } catch {
+      toast(`Could not read ${file.name || 'that image'}`);
+    }
+  }
+  if (!added) return;
+  save(); renderPhotos(); renderSettingsInfo();
+}
+
+function renderSettingsInfo() {
+  const total = photoCount();
+  const days = Object.values(state.photos).filter(a => a.length).length;
+  $('#s-photo-info').textContent = total
+    ? `${total} photo${total === 1 ? '' : 's'} across ${days} day${days === 1 ? '' : 's'} · about ${fmtBytes(photoBytes())} of device storage.`
+    : `No photos yet. ${PHOTO_SLOTS} a day, downscaled to ${PHOTO_MAX}px so they stay light.`;
+}
+
+/* lightbox */
+let lbId = null;
+function openLightbox(id) {
+  if (!photosToday().some(p => p.id === id)) return;
+  lbId = id;
+  renderLightbox();
+  $('#lightbox').hidden = false;
+  $('#lb-close').focus();
+}
+function closeLightbox() { $('#lightbox').hidden = true; lbId = null; }
+function renderLightbox() {
+  const list = photosToday();
+  const i = list.findIndex(p => p.id === lbId);
+  if (i < 0) { closeLightbox(); return; }
+  const day = parseKey(todayStr()).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  $('#lb-img').src = list[i].src;
+  $('#lb-img').alt = `Photo ${i + 1} of ${list.length} added on ${day}`;
+  $('#lb-cap').textContent = `${i + 1} of ${list.length} · ${day}`;
+  const many = list.length > 1;
+  $('#lb-prev').hidden = !many;
+  $('#lb-next').hidden = !many;
+}
+function stepLightbox(n) {
+  const list = photosToday();
+  const i = list.findIndex(p => p.id === lbId);
+  if (i < 0) return;
+  lbId = list[(i + n + list.length) % list.length].id;
+  renderLightbox();
+}
+function deletePhoto(id) {
+  const k = todayStr();
+  state.photos[k] = (state.photos[k] || []).filter(p => p.id !== id);
+  save(); renderPhotos(); renderSettingsInfo();
+}
+
+/* ---------- Countdown ---------- */
+// whole days between today and a 'YYYY-MM-DD' target (negative = already passed)
+function cdDays(c, now = new Date()) {
+  const target = parseKey(c.date);
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((target - midnight) / 86400000);
+}
+function cdLabel(diff) {
+  if (diff < 0) return { big: String(-diff), unit: -diff === 1 ? 'day ago' : 'days ago', cls: 'is-past' };
+  if (diff === 0) return { big: 'Today', unit: '', cls: 'is-today' };
+  if (diff === 1) return { big: 'Tomorrow', unit: '', cls: 'is-soon' };
+  return { big: String(diff), unit: 'days', cls: '' };
+}
+const fmtDay = key => parseKey(key).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+let cdSig = '';
+function renderCountdown() {
+  const now = new Date();
+  const all = state.countdowns.map(c => ({ ...c, diff: cdDays(c, now) }));
+  const upcoming = all.filter(c => c.diff >= 0).sort((a, b) => a.diff - b.diff || a.name.localeCompare(b.name));
+  const passed = all.filter(c => c.diff < 0).sort((a, b) => b.diff - a.diff);
+  const list = [...upcoming, ...passed];
+
+  // only touch the DOM when something visible actually changed (keeps focus intact)
+  const sig = list.map(c => `${c.id}:${c.diff}`).join('|');
+  if (sig === cdSig) return;
+  cdSig = sig;
+
+  $('#cd-count').textContent = upcoming.length ? `${upcoming.length} upcoming` : (all.length ? 'all passed' : '');
+  $('#cd-foot').hidden = !passed.length;
+
+  $('#cd-list').innerHTML = list.length
+    ? list.map(c => {
+        const v = cdLabel(c.diff);
+        return `
+        <div class="cd ${c.diff < 0 ? 'is-past' : ''}">
+          <div class="cd-val ${v.cls}"><b>${v.big}</b>${v.unit ? `<span>${esc(v.unit)}</span>` : ''}</div>
+          <div class="cd-info">
+            <strong>${esc(c.name)}</strong>
+            <span>${fmtDay(c.date)}</span>
+          </div>
+          <button class="icon" data-del="${c.id}" title="Delete" aria-label="Delete ${esc(c.name)}">${icon('i-trash')}</button>
+        </div>`;
+      }).join('')
+    : `<p class="muted">Nothing on the countdown. Add a date below — birthdays, trips, deadlines.</p>`;
 }
 
 /* ---------- Notes ---------- */
@@ -508,6 +716,8 @@ function renderAll() {
   renderPomo();
   renderTodos();
   renderHabits();
+  renderPhotos();
+  renderCountdown();
   renderWellness();
   renderChart();
   renderHeat();
@@ -639,7 +849,7 @@ $('#heat-body').addEventListener('click', e => {
 $('#water').addEventListener('click', e => {
   const b = e.target.closest('[data-n]');
   if (!b) return;
-  const k = todayStr(), n = +b.dataset.n, w = state.water[k] || 0;
+  const k = todayStr(), n = +b.dataset.n, w = Math.min(state.water[k] || 0, BOTTLES);
   state.water[k] = w === n ? n - 1 : n;
   save(); renderWellness();
 });
@@ -722,6 +932,84 @@ $('#capture-form').addEventListener('submit', e => {
   toast('Captured to Inbox');
 });
 
+/* ---------- Photo events ---------- */
+const photoRow = $('#photo-row');
+
+photoRow.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add) { $('#photo-input').click(); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { deletePhoto(del.dataset.del); return; }
+  const open = e.target.closest('[data-open]');
+  if (open) openLightbox(open.dataset.open);
+});
+$('#photo-input').addEventListener('change', e => {
+  if (e.target.files.length) addPhotos(e.target.files);
+  e.target.value = '';
+});
+
+['dragenter', 'dragover'].forEach(ev => photoRow.addEventListener(ev, e => {
+  e.preventDefault();
+  photoRow.classList.add('drag');
+}));
+['dragleave', 'drop'].forEach(ev => photoRow.addEventListener(ev, e => {
+  e.preventDefault();
+  photoRow.classList.remove('drag');
+}));
+photoRow.addEventListener('drop', e => {
+  const files = e.dataTransfer && e.dataTransfer.files;
+  if (files && files.length) addPhotos(files);
+});
+
+$('#lb-close').onclick = closeLightbox;
+$('#lb-prev').onclick = () => stepLightbox(-1);
+$('#lb-next').onclick = () => stepLightbox(1);
+$('#lb-del').onclick = () => {
+  const id = lbId;
+  const list = photosToday();
+  if (list.length <= 1) { deletePhoto(id); closeLightbox(); return; }
+  const next = list[(list.findIndex(p => p.id === id) + 1) % list.length].id;
+  deletePhoto(id);
+  lbId = next;
+  renderLightbox();
+};
+$('#lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if ($('#lightbox').hidden) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft') stepLightbox(-1);
+  else if (e.key === 'ArrowRight') stepLightbox(1);
+});
+
+/* ---------- Countdown events ---------- */
+$('#cd-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#cd-name').value.trim();
+  const date = $('#cd-date').value;
+  if (!name) { $('#cd-name').focus(); return; }
+  if (!date) { $('#cd-date').focus(); return; }
+  state.countdowns.push({ id: uid(), name, date });
+  save(); renderCountdown();
+  $('#cd-name').value = '';
+  $('#cd-date').value = '';
+  $('#cd-name').focus();
+});
+$('#cd-list').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (!del) return;
+  state.countdowns = state.countdowns.filter(c => c.id !== del.dataset.del);
+  save(); renderCountdown();
+});
+$('#cd-clear').onclick = () => {
+  const now = new Date();
+  const passed = state.countdowns.filter(c => cdDays(c, now) < 0).length;
+  if (!passed) return;
+  if (!confirm(`Remove ${passed} passed countdown${passed === 1 ? '' : 's'}?`)) return;
+  state.countdowns = state.countdowns.filter(c => cdDays(c, now) >= 0);
+  save(); renderCountdown();
+  toast('Passed countdowns cleared');
+};
+
 /* ---------- Settings events ---------- */
 $('#settings-btn').onclick = () => { fillSettings(); $('#settings').hidden = false; };
 $('#settings-close').onclick = () => { $('#settings').hidden = true; };
@@ -743,6 +1031,14 @@ $('#s-reminders').onchange = e => {
   saveSettings();
 };
 $('#s-prompt').onchange = e => { state.settings.dailyPrompt = e.target.checked; saveSettings(); };
+$('#s-photos-clear').onclick = () => {
+  const total = photoCount();
+  if (!total) { toast('No photos to delete'); return; }
+  if (!confirm(`Delete all ${total} photos? This cannot be undone.`)) return;
+  state.photos = {};
+  save(); renderPhotos(); renderSettingsInfo();
+  toast('All photos deleted');
+};
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applySettings);
 
 $('#export').onclick = () => {

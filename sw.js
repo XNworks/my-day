@@ -1,4 +1,4 @@
-const CACHE = 'myday-v3';
+const CACHE = 'myday-v6';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', event => {
@@ -16,6 +16,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== location.origin || url.pathname.includes('/api/')) return;
+  // never cache the auth flow
+  if (url.pathname === '/login' || url.pathname === '/logout') return;
 
   event.respondWith(
     fetch(event.request)
